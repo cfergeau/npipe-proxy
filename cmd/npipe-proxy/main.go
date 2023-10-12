@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"net"
 
-	"github.com/Microsoft/go-winio"
 	"inet.af/tcpproxy"
 )
 
@@ -21,7 +20,7 @@ func startProxy(ipPort string, npipePath string) (tcpproxy.Proxy, error) {
 		Addr: fmt.Sprintf("npipe:%d", npipePath),
 		// when there's a connection to ipPort, connect to the specified named pipe path
 		DialContext: func(ctx context.Context, network, addr string) (conn net.Conn, e error) {
-			return winio.DialPipeContext(ctx, npipePath)
+			return net.Dial("unix", npipePath)
 		},
 	})
 
@@ -29,7 +28,7 @@ func startProxy(ipPort string, npipePath string) (tcpproxy.Proxy, error) {
 }
 
 func main() {
-	proxy, err := startProxy(":8080", `\\.\pipe\crc-http`)
+	proxy, err := startProxy(":8080", `/tmp/unix.sock`)
 	if err != nil {
 		panic(err.Error())
 	}
